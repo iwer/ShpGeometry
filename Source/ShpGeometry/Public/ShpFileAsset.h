@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "UObject/Object.h"
 #include "UObject/ObjectMacros.h"
+#include "ShpTypes/ShpPolygon.h"
 
 #include "ShpFileAsset.generated.h"
 /**
@@ -17,5 +18,7 @@ class SHPGEOMETRY_API UShpFileAsset
 {
     GENERATED_BODY()
 public:
+    UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
+    TArray<FShpPolygon> Polygons;
 
 };

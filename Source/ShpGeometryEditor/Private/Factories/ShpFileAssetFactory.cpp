@@ -86,16 +86,20 @@ UObject* UShpFileAssetFactory::FactoryCreateFile(UClass* InClass, UObject* InPar
                             exterior->reverseWindingOrder();
                         }
 
+                        FShpPolygon shpPolygon;
+
                         for(auto &point : exterior) {
                             UE_LOG(LogTemp, Warning, TEXT("UShpFileAssetFactory: Point X:%.3f Y:%.3f"), point.getX(), point.getY());
                             FVector in(point.getX(), point.getY(),0);
                             FVector out;
                             if(GDALHelpers::TransformCoordinate(CoordTransform, in, out)) {
                                 UE_LOG(LogTemp, Warning, TEXT("UShpFileAssetFactory: Transformed Point X:%.3f Y:%.3f"), out.X, out.Y);
+                                shpPolygon.vertices.Add(out);
                             }
                         }
 
-
+                        if(shpPolygon.vertices.Num() > 0)
+                            Asset->Polygons.Add(shpPolygon);
                     }
                     else if (wkbFlatten(geometry->getGeometryType()) == wkbMultiPoint) {
                         UE_LOG(LogTemp,Warning,TEXT("UShpFileAssetFactory: MultiPoint geometry"))
