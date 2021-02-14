@@ -29,6 +29,7 @@ public class ShpGeometry : ModuleRules
                 "GeoReference",
                 "GDAL",
                 "UnrealGDAL",
+                "SpatialGeometryTools",
                 "ProceduralMeshComponent"
                 // ... add other public dependencies that you statically link with here ...
             }

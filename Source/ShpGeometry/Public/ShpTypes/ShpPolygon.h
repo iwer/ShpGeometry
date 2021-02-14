@@ -10,7 +10,7 @@ struct FShpPolygon {
     GENERATED_BODY()
 
     UPROPERTY(BlueprintReadWrite, EditAnywhere)
-    TArray<FVector> vertices;
+    TArray<FVector> Vertices;
 
     FShpPolygon() {}
 };

@@ -94,11 +94,11 @@ UObject* UShpFileAssetFactory::FactoryCreateFile(UClass* InClass, UObject* InPar
                             FVector out;
                             if(GDALHelpers::TransformCoordinate(CoordTransform, in, out)) {
                                 UE_LOG(LogTemp, Warning, TEXT("UShpFileAssetFactory: Transformed Point X:%.3f Y:%.3f"), out.X, out.Y);
-                                shpPolygon.vertices.Add(out);
+                                shpPolygon.Vertices.Add(out);
                             }
                         }
 
-                        if(shpPolygon.vertices.Num() > 0)
+                        if(shpPolygon.Vertices.Num() > 0)
                             Asset->Polygons.Add(shpPolygon);
                     }
                     else if (wkbFlatten(geometry->getGeometryType()) == wkbMultiPoint) {
