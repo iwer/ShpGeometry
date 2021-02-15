@@ -7,23 +7,23 @@
 // Sets default values
 AShpPolygonActor::AShpPolygonActor()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+     // Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+    PrimaryActorTick.bCanEverTick = true;
     ProcMesh = CreateDefaultSubobject<UProceduralMeshComponent>(TEXT("ProcMesh"));
-    ProcMesh->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::SnapToTargetIncludingScale);
+    ProcMesh->SetupAttachment(GetRootComponent());
 }
 
 // Called when the game starts or when spawned
 void AShpPolygonActor::BeginPlay()
 {
-	Super::BeginPlay();
-	
+    Super::BeginPlay();
+
 }
 
 // Called every frame
 void AShpPolygonActor::Tick(float DeltaTime)
 {
-	Super::Tick(DeltaTime);
+    Super::Tick(DeltaTime);
 
 }
 
@@ -45,21 +45,22 @@ void AShpPolygonActor::OnConstruction(const FTransform &Transform)
             // transform vertices to game coordinates
             TArray < FVector > gameVerts;
             for (auto &v : polygon.Vertices) {
-                FVector gv = GeoRef->ToGameCoordinate(FVector(v.X, v.Y, 0));
+                FVector gv = GeoRef->ToGameCoordinate(FVector(v.X, v.Y, GetActorLocation().Z));
+
 
                 // make relative to origin
                 gv -= GetActorLocation();
-                gv.Z = GetActorLocation().Z;
+                //gv.Z = GetActorLocation().Z;
                 gameVerts.Add(gv);
 
                 FVector groundVert = SnapToGround(gv,100);
-                minZ = std::min(groundVert.Z, minZ);
+                minZ = std::min(groundVert.Z-GetActorLocation().Z, minZ);
             }
 
             // set to min height
-            for(auto &v : gameVerts) {
-                v.Z = minZ;
-            }
+//            for(auto &v : gameVerts) {
+//                v.Z = minZ;
+//            }
 
             // earcut
             TArray < int32 > indices = PolygonHelper::TesselatePolygon(gameVerts);
