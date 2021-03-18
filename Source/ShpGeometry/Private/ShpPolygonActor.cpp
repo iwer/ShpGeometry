@@ -11,6 +11,8 @@ AShpPolygonActor::AShpPolygonActor()
     PrimaryActorTick.bCanEverTick = true;
     ProcMesh = CreateDefaultSubobject<UProceduralMeshComponent>(TEXT("ProcMesh"));
     ProcMesh->SetupAttachment(GetRootComponent());
+
+    GeoLocation->bSnapToGround = true;
 }
 
 // Called when the game starts or when spawned
@@ -29,12 +31,21 @@ void AShpPolygonActor::Tick(float DeltaTime)
 
 void AShpPolygonActor::OnConstruction(const FTransform &Transform)
 {
-    if(GeoRef) {
-        Longitude = GeoRef->Longitude;
-        Latitude = GeoRef->Latitude;
+    if(GeoLocation->GeoRef) {
+        GeoLocation->Longitude = GeoLocation->GeoRef->Longitude;
+        GeoLocation->Latitude = GeoLocation->GeoRef->Latitude;
+    }
+    else {
+        UE_LOG(LogTemp, Warning, TEXT("AShpPolygonActor: Cant set Lon/Lat on GeolocationComponent, no GeoRef!"))
     }
     Super::OnConstruction(Transform);
 
+
+    if (!GeoLocation->GeoRef)
+        return;
+
+    GeoLocation->UpdateParentActorLocation();
+    
     if(ShpFile) {
         ProcMesh->ClearAllMeshSections();
 
@@ -45,7 +56,7 @@ void AShpPolygonActor::OnConstruction(const FTransform &Transform)
             // transform vertices to game coordinates
             TArray < FVector > gameVerts;
             for (auto &v : polygon.Vertices) {
-                FVector gv = GeoRef->ToGameCoordinate(FVector(v.X, v.Y, GetActorLocation().Z));
+                FVector gv = GeoLocation->GeoRef->ToGameCoordinate(FVector(v.X, v.Y, GetActorLocation().Z));
 
 
                 // make relative to origin
@@ -53,8 +64,8 @@ void AShpPolygonActor::OnConstruction(const FTransform &Transform)
                 //gv.Z = GetActorLocation().Z;
                 gameVerts.Add(gv);
 
-                FVector groundVert = SnapToGround(gv,100);
-                minZ = std::min(groundVert.Z-GetActorLocation().Z, minZ);
+                FVector groundVert = GeoLocation->SnapToGround(gv, 100);
+                minZ = std::min(groundVert.Z - GetActorLocation().Z, minZ);
             }
 
             // set to min height
