@@ -74,7 +74,7 @@ void AShpPolygonActor::OnConstruction(const FTransform &Transform)
 //            }
 
             // earcut
-            TArray < int32 > indices = PolygonHelper::TesselatePolygon(gameVerts);
+            TArray < int32 > indices = PolygonHelper::TesselatePolygon(gameVerts, true);
 
             // construct buffers
             TArray <int32> triIndices;
