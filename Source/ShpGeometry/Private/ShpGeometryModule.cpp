@@ -2,7 +2,6 @@
 
 #include "ShpGeometryModule.h"
 #include "UnrealGDAL.h"
-
 #define LOCTEXT_NAMESPACE "FShpGeometryModule"
 
 void FShpGeometryModule::StartupModule()
