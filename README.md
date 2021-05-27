@@ -4,7 +4,7 @@ This plugins is intended to import geometry from ESRI shape files. This is a ver
 
 ## Building
 
-This plugin uses [GeoReference](https://github.com/iwer/GeoReference), [UnrealGDAL](https://github.com/TensorWorks/UnrealGDAL), [ue4cli](https://github.com/adamrehn/ue4cli) and [conan-ue4cli](https://github.com/adamrehn/conan-ue4cli) to build and manage the required GDAL libraries.
+This plugin uses [GeoReference](https://github.com/iwer/GeoReference), [SpatialGeometryTools](https://github.com/iwer/SpatialGeometryTools), [UnrealGDAL](https://github.com/TensorWorks/UnrealGDAL), [ue4cli](https://github.com/adamrehn/ue4cli) and [conan-ue4cli](https://github.com/adamrehn/conan-ue4cli) to build and manage the required GDAL libraries.
 
 * Download a Release of UnrealGDAL and place it in the Plugins directory or clone and follow instructions to build UnrealGDAL from source.
 
