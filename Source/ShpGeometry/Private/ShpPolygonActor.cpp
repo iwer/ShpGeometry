@@ -40,7 +40,6 @@ void AShpPolygonActor::OnConstruction(const FTransform &Transform)
     }
     Super::OnConstruction(Transform);
 
-
     if (!GeoLocation->GeoRef)
         return;
 
@@ -56,12 +55,12 @@ void AShpPolygonActor::OnConstruction(const FTransform &Transform)
             // transform vertices to game coordinates
             TArray < FVector > gameVerts;
             for (auto &v : polygon.Vertices) {
-                FVector gv = GeoLocation->GeoRef->ToGameCoordinate(FVector(v.X, v.Y, GetActorLocation().Z));
+                FVector gv = GeoLocation->GeoRef->ToGameCoordinate(FVector(v.X, v.Y, v.Z));
 
 
                 // make relative to origin
                 gv -= GetActorLocation();
-                //gv.Z = GetActorLocation().Z;
+                gv.Z = 0;//GetActorLocation().Z;
                 gameVerts.Add(gv);
 
                 FVector groundVert = GeoLocation->SnapToGround(gv, 100);
