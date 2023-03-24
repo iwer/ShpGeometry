@@ -18,8 +18,8 @@ UObject* UShpFileAssetFactory::FactoryCreateFile(UClass* InClass, UObject* InPar
     UShpFileAsset * Asset = NewObject<UShpFileAsset>(InParent, InClass, InName, Flags);
 
     // open file
-    GDALDatasetRef gdaldata = GDALHelpers::OpenVector(Filename, true);
-    if(!gdaldata){
+    const GDALDatasetRef Gdaldata = GDALHelpers::OpenVector(Filename, true);
+    if(!Gdaldata){
         bOutOperationCanceled = true;
         return nullptr;
     }
@@ -27,84 +27,83 @@ UObject* UShpFileAssetFactory::FactoryCreateFile(UClass* InClass, UObject* InPar
 
 
     // get layers
-    int numLayers = gdaldata->GetLayerCount();
-    for(int i = 0; i < numLayers; ++i) {
-        OGRLayer * layer = gdaldata->GetLayer(i);
-        UE_LOG(LogTemp, Warning, TEXT("UShpFileAssetFactory: layer name %s"), ANSI_TO_TCHAR(layer->GetName()));
+    const int NumLayers = Gdaldata->GetLayerCount();
+    for(int i = 0; i < NumLayers; ++i) {
+        OGRLayer * Layer = Gdaldata->GetLayer(i);
+        UE_LOG(LogTemp, Warning, TEXT("UShpFileAssetFactory: layer name %s"), ANSI_TO_TCHAR(Layer->GetName()));
 
-        char * srcWktStr = nullptr;
-        layer->GetSpatialRef()->exportToWkt(&srcWktStr);
-        FString sourceWkt = FString(srcWktStr);
-        FString targetWkt = GDALHelpers::WktFromEPSG(UGeoCoordinate::EPSG_WGS84, false);
-        UE_LOG(LogTemp, Warning, TEXT("UShpFileAssetFactory: src: %s tgt: %s"), *sourceWkt, *targetWkt);
-        OGRCoordinateTransformationRef CoordTransform = GDALHelpers::CreateCoordinateTransform(sourceWkt, targetWkt);
+        char * SrcWktStr = nullptr;
+        Layer->GetSpatialRef()->exportToWkt(&SrcWktStr);
+        FString SourceWkt = FString(SrcWktStr);
+        FString TargetWkt = GDALHelpers::WktFromEPSG(UGeoCoordinate::EPSG_WGS84, false);
+        UE_LOG(LogTemp, Warning, TEXT("UShpFileAssetFactory: src: %s tgt: %s"), *SourceWkt, *TargetWkt);
+        OGRCoordinateTransformationRef CoordTransform = GDALHelpers::CreateCoordinateTransform(SourceWkt, TargetWkt);
         if(!CoordTransform.IsValid()) {
             UE_LOG(LogTemp, Warning, TEXT("UShpFileAssetFactory: CoordTransform invalid."))
         }
 
-        layer->ResetReading();
-        for(auto &feature : layer) {
-            for( const auto& oField: *feature )
+        Layer->ResetReading();
+        for(auto &Feature : Layer) {
+            for( const auto& OField: *Feature )
             {
-                switch( oField.GetType() )
+                switch( OField.GetType() )
                 {
                     case OFTInteger:
-                        UE_LOG(LogTemp, Warning, TEXT("UShpFileAssetFactory: Field %s: %d,"), ANSI_TO_TCHAR(oField.GetName()) ,oField.GetInteger() );
+                        UE_LOG(LogTemp, Warning, TEXT("UShpFileAssetFactory: Field %s: %d,"), ANSI_TO_TCHAR(OField.GetName()) ,OField.GetInteger() );
                         break;
                     case OFTReal:
-                        UE_LOG(LogTemp, Warning, TEXT("UShpFileAssetFactory: Field %s: %.3f,"), ANSI_TO_TCHAR(oField.GetName()) ,oField.GetDouble() );
+                        UE_LOG(LogTemp, Warning, TEXT("UShpFileAssetFactory: Field %s: %.3f,"), ANSI_TO_TCHAR(OField.GetName()) ,OField.GetDouble() );
                         break;
                     case OFTString:
-                        UE_LOG(LogTemp, Warning, TEXT("UShpFileAssetFactory: Field %s: %s,"), ANSI_TO_TCHAR(oField.GetName()) ,oField.GetString() );
+                        UE_LOG(LogTemp, Warning, TEXT("UShpFileAssetFactory: Field %s: %s,"), ANSI_TO_TCHAR(OField.GetName()) ,OField.GetString() );
                         break;
                     default:
-                        UE_LOG(LogTemp, Warning, TEXT("UShpFileAssetFactory: Field %s: %s,"), ANSI_TO_TCHAR(oField.GetName()) ,oField.GetAsString() );
+                        UE_LOG(LogTemp, Warning, TEXT("UShpFileAssetFactory: Field %s: %s,"), ANSI_TO_TCHAR(OField.GetName()) ,OField.GetAsString() );
                         break;
                 }
             }
 
 
-            OGRGeometry *geometry;
-            int numGeom = feature->GetGeomFieldCount();
-            for(int j = 0; j < numGeom; ++j) {
-                geometry = feature->GetGeomFieldRef(j);
-                if(geometry != NULL) {
-                    if(wkbFlatten(geometry->getGeometryType()) == wkbPoint){
+            const int NumGeom = Feature->GetGeomFieldCount();
+            for(int j = 0; j < NumGeom; ++j) {
+                OGRGeometry* Geometry = Feature->GetGeomFieldRef(j);
+                if(Geometry != nullptr) {
+                    if(wkbFlatten(Geometry->getGeometryType()) == wkbPoint){
                         UE_LOG(LogTemp,Warning,TEXT("UShpFileAssetFactory: Point geometry"))
                     }
-                    else if (wkbFlatten(geometry->getGeometryType()) == wkbLineString) {
+                    else if (wkbFlatten(Geometry->getGeometryType()) == wkbLineString) {
                         UE_LOG(LogTemp,Warning,TEXT("UShpFileAssetFactory: LineString geometry"))
                     }
-                    else if (wkbFlatten(geometry->getGeometryType()) == wkbPolygon) {
+                    else if (wkbFlatten(Geometry->getGeometryType()) == wkbPolygon) {
                         UE_LOG(LogTemp,Warning,TEXT("UShpFileAssetFactory: Polygon geometry"))
-                        auto polygon = geometry->toPolygon();
+                        const auto Polygon = Geometry->toPolygon();
 
-                        OGRLinearRing * exterior = polygon->getExteriorRing();
+                        OGRLinearRing * Exterior = Polygon->getExteriorRing();
 
                         // fix order if necessary
-                        if(!exterior->isClockwise()) {
-                            exterior->reverseWindingOrder();
+                        if(!Exterior->isClockwise()) {
+                            Exterior->reverseWindingOrder();
                         }
 
-                        FShpPolygon shpPolygon;
+                        FShpPolygon ShpPolygon;
 
-                        for(auto &point : exterior) {
-                            UE_LOG(LogTemp, Warning, TEXT("UShpFileAssetFactory: Point X:%.3f Y:%.3f"), point.getX(), point.getY());
-                            FVector in(point.getX(), point.getY(),0);
-                            FVector out;
-                            if(GDALHelpers::TransformCoordinate(CoordTransform, in, out)) {
-                                UE_LOG(LogTemp, Warning, TEXT("UShpFileAssetFactory: Transformed Point X:%.3f Y:%.3f"), out.X, out.Y);
-                                shpPolygon.Vertices.Add(out);
+                        for(auto &Point : Exterior) {
+                            UE_LOG(LogTemp, Warning, TEXT("UShpFileAssetFactory: Point X:%.3f Y:%.3f"), Point.getX(), Point.getY());
+                            FVector In(Point.getX(), Point.getY(),0);
+                            FVector Out;
+                            if(GDALHelpers::TransformCoordinate(CoordTransform, In, Out)) {
+                                UE_LOG(LogTemp, Warning, TEXT("UShpFileAssetFactory: Transformed Point X:%.3f Y:%.3f"), Out.X, Out.Y);
+                                ShpPolygon.Vertices.Add(Out);
                             }
                         }
 
-                        if(shpPolygon.Vertices.Num() > 0)
-                            Asset->Polygons.Add(shpPolygon);
+                        if(ShpPolygon.Vertices.Num() > 0)
+                            Asset->Polygons.Add(ShpPolygon);
                     }
-                    else if (wkbFlatten(geometry->getGeometryType()) == wkbMultiPoint) {
+                    else if (wkbFlatten(Geometry->getGeometryType()) == wkbMultiPoint) {
                         UE_LOG(LogTemp,Warning,TEXT("UShpFileAssetFactory: MultiPoint geometry"))
                     }
-                    else if (wkbFlatten(geometry->getGeometryType()) == wkbMultiPolygon) {
+                    else if (wkbFlatten(Geometry->getGeometryType()) == wkbMultiPolygon) {
                         UE_LOG(LogTemp,Warning,TEXT("UShpFileAssetFactory: MultiPolygon geometry"))
                     }
                 }

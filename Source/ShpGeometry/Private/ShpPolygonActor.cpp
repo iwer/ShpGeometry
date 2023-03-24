@@ -44,7 +44,7 @@ void AShpPolygonActor::OnConstruction(const FTransform &Transform)
         return;
 
     GeoLocation->UpdateParentActorLocation();
-    
+
     if(ShpFile) {
         ProcMesh->ClearAllMeshSections();
 
@@ -64,7 +64,7 @@ void AShpPolygonActor::OnConstruction(const FTransform &Transform)
                 gameVerts.Add(gv);
 
                 FVector groundVert = GeoLocation->SnapToGround(gv, 100);
-                minZ = std::min(groundVert.Z - GetActorLocation().Z, minZ);
+                minZ = std::min<float>(groundVert.Z - GetActorLocation().Z, minZ);
             }
 
             // set to min height
@@ -73,7 +73,7 @@ void AShpPolygonActor::OnConstruction(const FTransform &Transform)
 //            }
 
             // earcut
-            TArray < int32 > indices = PolygonHelper::TesselatePolygon(gameVerts, true);
+            TArray < int32 > indices = PolygonHelper::TessellatePolygon(gameVerts, TArray<FVector>(), true);
 
             // construct buffers
             TArray <int32> triIndices;
