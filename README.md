@@ -1,6 +1,12 @@
-# ShpGeometry - UE4 Plugin
+# ShpGeometry - Unreal Engine Plugin
 
 This plugins is intended to import geometry from ESRI shape files. This is a very early version that imports only polygon shapes into a ShpFileAsset, that can be used to generate ProceduralMeshComponents.
+
+## Compatibility
+
+* Unreal Engine 4 is supported at least with 4.27 (branch ue4, tag ue4.27)
+* Unreal Engine 5 is supported up to 5.1 (on master branch)
+
 
 ## Building
 
